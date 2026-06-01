@@ -1,11 +1,6 @@
-import { createClient } from "@supabase/supabase-js"
+// Re-export the SSR browser client as the default Supabase client
+export { createClient } from "@/utils/supabase/client"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-})
+// Singleton for hooks that need a stable reference
+import { createClient } from "@/utils/supabase/client"
+export const supabase = createClient()
