@@ -1,9 +1,10 @@
 import { PrismaClient } from "@prisma/client"
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 
 function createPrismaClient(): PrismaClient {
-  const url = process.env.DATABASE_URL ?? "file:./prisma/app.db"
-  const adapter = new PrismaBetterSqlite3({ url })
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+  const adapter = new PrismaPg(pool)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new PrismaClient({ adapter } as any)
 }
