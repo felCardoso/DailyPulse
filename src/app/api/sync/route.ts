@@ -6,6 +6,9 @@ const tableMap = {
   Workout: () => prisma.workout,
   Meal: () => prisma.meal,
   Exercise: () => prisma.exercise,
+  Task: () => prisma.task,
+  Note: () => prisma.note,
+  Goal: () => prisma.goal,
 }
 
 export async function POST(req: NextRequest) {

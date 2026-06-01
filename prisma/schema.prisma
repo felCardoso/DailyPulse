@@ -16,6 +16,10 @@ model User {
   routines  Routine[]
   workouts  Workout[]
   meals     Meal[]
+  tasks     Task[]
+  habits    Habit[]
+  notes     Note[]
+  goals     Goal[]
   syncQueue SyncQueue[]
 }
 
@@ -34,9 +38,25 @@ model Routine {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  items RoutineItem[]
+
   @@index([userId])
   @@index([userId, day])
   @@index([remoteId])
+}
+
+model RoutineItem {
+  id        String   @id @default(uuid())
+  routineId String
+  routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  title     String
+  completed Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([routineId])
+  @@index([routineId, order])
 }
 
 model Workout {
@@ -96,6 +116,88 @@ model Meal {
   @@index([userId])
   @@index([userId, date])
   @@index([remoteId])
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  priority    String    @default("medium")
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  syncStatus  String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([userId, completed])
+  @@index([userId, dueDate])
+}
+
+model Habit {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  color       String     @default("#8b5cf6")
+  icon        String?
+  frequency   String     @default("daily")
+  targetDays  String     @default("[]")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  logs HabitLog[]
+
+  @@index([userId])
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      String
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
+  @@index([habitId])
+  @@index([habitId, date])
+}
+
+model Note {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String?
+  content    String
+  pinned     Boolean  @default(false)
+  syncStatus String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, pinned])
+}
+
+model Goal {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  targetValue  Float
+  currentValue Float    @default(0)
+  unit         String?
+  weekStart    String
+  completed    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, weekStart])
 }
 
 model SyncQueue {
