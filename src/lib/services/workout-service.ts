@@ -6,7 +6,10 @@ export async function createWorkout(userId: string, data: WorkoutFormData): Prom
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId, ...data }),
   })
-  if (!res.ok) throw new Error("Failed to create workout")
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error ?? "Failed to create workout")
+  }
   return res.json()
 }
 

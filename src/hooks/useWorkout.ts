@@ -68,11 +68,13 @@ export function useCreateWorkout() {
   })
 }
 
+type WorkoutMetaUpdate = Omit<WorkoutFormData, "exercises">
+
 export function useUpdateWorkout() {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<WorkoutFormData> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<WorkoutMetaUpdate> }) =>
       updateWorkout(id, data),
     onMutate: ({ id, data }) => {
       useAppStore.getState().updateWorkout(id, { ...data, syncStatus: "pending" })

@@ -190,6 +190,7 @@ export type WorkoutFormData = {
   name: string
   description?: string
   date?: Date
+  exercises?: ExerciseFormData[]
 }
 
 export type ExerciseFormData = {
