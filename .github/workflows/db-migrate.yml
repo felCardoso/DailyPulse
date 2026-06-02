@@ -1,0 +1,63 @@
+name: Database Migration
+
+on:
+  push:
+    branches:
+      - main
+      - claude/personal-org-pwa-nextjs-ndlAZ
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    name: Apply SQL migrations to Supabase
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_PROJECT_REF: anhbdjrcraymhdbaduml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          echo "Running migrations on project $SUPABASE_PROJECT_REF..."
+
+          # Read and escape the SQL file for JSON
+          SQL=$(cat supabase-migration-new-tables.sql | python3 -c "
+          import sys, json
+          print(json.dumps(sys.stdin.read()))
+          ")
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": $SQL}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "Response: $BODY"
+          echo "HTTP status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "201" ]; then
+            echo "Migration failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "Migration applied successfully"
+
+      - name: Verify tables exist
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          RESPONSE=$(curl -s -X POST \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"query": "SELECT table_name FROM information_schema.tables WHERE table_schema = '\''public'\'' ORDER BY table_name"}')
+
+          echo "Tables in database:"
+          echo "$RESPONSE" | python3 -c "import sys,json; [print(' ✓', r['table_name']) for r in json.load(sys.stdin)]" 2>/dev/null || echo "$RESPONSE"
