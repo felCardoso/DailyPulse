@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase/client"
+import { getSupabaseClient } from "@/lib/supabase/client"
 import { useAppStore } from "@/store/app-store"
 import type { User as AppUser } from "@/types"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -22,6 +22,8 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const supabase = getSupabaseClient()
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ? toAppUser(session.user) : null)
       setLoading(false)
@@ -35,6 +37,7 @@ export function useAuth() {
 
   async function signIn(email: string, password: string) {
     setError(null)
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) setError(error.message)
     return !error
@@ -42,6 +45,7 @@ export function useAuth() {
 
   async function signUp(email: string, password: string, name?: string) {
     setError(null)
+    const supabase = getSupabaseClient()
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -52,6 +56,7 @@ export function useAuth() {
   }
 
   async function signOut() {
+    const supabase = getSupabaseClient()
     await supabase.auth.signOut()
     setUser(null)
   }

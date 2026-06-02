@@ -1,6 +1,15 @@
-// Re-export the SSR browser client as the default Supabase client
-export { createClient } from "@/utils/supabase/client"
+import { createBrowserClient } from "@supabase/ssr"
 
-// Singleton for hooks that need a stable reference
-import { createClient } from "@/utils/supabase/client"
-export const supabase = createClient()
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  )
+}
+
+// Stable singleton for client-side hooks
+let _client: ReturnType<typeof createClient> | null = null
+export function getSupabaseClient() {
+  if (typeof window === "undefined") return createClient()
+  return (_client ??= createClient())
+}

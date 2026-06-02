@@ -4,6 +4,7 @@ import { useParams } from "next/navigation"
 import { useRoutines } from "@/hooks/useRoutine"
 import { dayLabel } from "@/utils/date"
 import { Badge } from "@/components/ui/badge"
+import { RoutineChecklist } from "@/components/Routines/RoutineChecklist"
 
 export default function RotinaDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -19,7 +20,7 @@ export default function RotinaDetailPage() {
   }
 
   return (
-    <div className="py-6 space-y-4">
+    <div className="py-6 space-y-6">
       <div className="flex items-start justify-between gap-2">
         <h1 className="text-xl font-bold">{routine.name}</h1>
         <Badge variant={routine.completed ? "success" : "secondary"}>
@@ -34,6 +35,9 @@ export default function RotinaDetailPage() {
         {routine.time && (
           <span className="text-muted-foreground">Horário: <span className="text-foreground font-medium">{routine.time}</span></span>
         )}
+      </div>
+      <div className="border-t border-white/10 pt-4">
+        <RoutineChecklist routineId={id} />
       </div>
     </div>
   )
